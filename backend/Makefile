@@ -1,4 +1,5 @@
 # Simple Makefile for a Go project
+include .env
 
 # Build the application
 all: build test
@@ -29,6 +30,25 @@ docker-down:
 		echo "Falling back to Docker Compose V1"; \
 		docker-compose down; \
 	fi
+
+# Create migration file
+migrate-create:
+	@echo "Creating migration..."
+	migrate create -ext sql -dir internal/database/migrations -seq $(name)
+	@echo "Migration created"
+
+# Run migrations
+migrate-up:
+	@echo "Running migrations..."
+	@echo "postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable"
+	docker run -v ./internal/database/migrations:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable up
+	@echo "Finished migrations"
+
+# Revert migration
+migrate-down:
+	@echo "Reverting migration..."
+	docker run -v ./internal/database/migrations:/migrations --network host migrate/migrate -path=/migrations/ -database postgres://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?sslmode=disable down
+	@echo "Finished reverting"
 
 # Test the application
 test:
