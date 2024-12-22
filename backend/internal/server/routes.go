@@ -14,6 +14,10 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	mux.HandleFunc("/health", s.healthHandler)
 
+	// User routes
+	mux.HandleFunc("/users/{id}", s.getUserHandler)
+	mux.HandleFunc("/users", s.createUserHandler)
+
 	// Wrap the mux with CORS middleware
 	return s.corsMiddleware(mux)
 }
