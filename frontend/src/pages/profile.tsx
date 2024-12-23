@@ -5,6 +5,7 @@ const ProfilePage = () => {
   const {
     auth: { user },
   } = useContext(AuthContext);
+
   return (
     <div>
       <h1>Profile Page</h1>

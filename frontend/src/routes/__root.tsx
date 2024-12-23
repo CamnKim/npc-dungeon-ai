@@ -1,14 +1,12 @@
-import { createRootRoute, Outlet, useNavigate } from '@tanstack/react-router';
+import { createRootRoute, Outlet } from '@tanstack/react-router';
 import { TanStackRouterDevtools } from '@tanstack/router-devtools';
 import Navbar from '../components/navbar';
-import { useContext, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
-import { AuthContext } from '../contexts/auth.context';
-import { useGetUserByAuth0 } from '../hooks/queries';
+import UserProvider from '../components/UserProvider';
 
 const Root = () => {
-  const { isLoading: auth0Loading, isAuthenticated, user } = useAuth0();
-  const { setAuthValue } = useContext(AuthContext);
+  const { isLoading: auth0Loading, user } = useAuth0();
 
   const sub = useMemo(() => {
     if (auth0Loading || !user) {
@@ -17,28 +15,24 @@ const Root = () => {
     return user.sub!;
   }, [auth0Loading, user]);
 
-  const { data, isLoading } = useGetUserByAuth0(sub, auth0Loading);
-
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    console.log(data);
-    if (!auth0Loading && !isLoading && isAuthenticated) {
-      if (!data) {
-        console.log('User not found, onboard user');
-        navigate({ to: '/onboard' });
-      }
-      setAuthValue({ user: data, auth0: user });
-    }
-  }, [auth0Loading, isAuthenticated, data, isLoading, setAuthValue, user]);
+  if (!sub) {
+    return (
+      <>
+        <Navbar />
+        <hr />
+        <Outlet />
+        <TanStackRouterDevtools />
+      </>
+    );
+  }
 
   return (
-    <>
+    <UserProvider auth0Sub={sub}>
       <Navbar />
       <hr />
       <Outlet />
       <TanStackRouterDevtools />
-    </>
+    </UserProvider>
   );
 };
 

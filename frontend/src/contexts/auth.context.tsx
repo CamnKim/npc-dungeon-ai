@@ -18,6 +18,6 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   const { user } = useAuth0();
   const [authValue, setAuthValue] = useState<Auth>({ auth0: user });
 
-  const value = useMemo<AuthContextType>(() => ({ auth: authValue, setAuthValue }), []);
+  const value = useMemo<AuthContextType>(() => ({ auth: authValue, setAuthValue }), [authValue]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
