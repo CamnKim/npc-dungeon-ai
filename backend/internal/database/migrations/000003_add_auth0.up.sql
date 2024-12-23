@@ -1,0 +1,4 @@
+ALTER TABLE users
+    ADD COLUMN auth0_sub TEXT NOT NULL,
+    ADD COLUMN date_of_birth TIMESTAMP,
+    ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
