@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_authenticated')({
 function RouteComponent() {
   const { isAuthenticated, isLoading } = useAuth0();
   if (isLoading) {
-    return <h1>Loading...</h1>;
+    return <h1>Loading... (authenticating)</h1>;
   }
   if (isAuthenticated) {
     return <Outlet />;

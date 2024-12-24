@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { useOnboardUser } from '../hooks/queries';
+import { useMemo, useState } from 'react';
+import { useGetUserByAuth0, useOnboardUser } from '../hooks/queries';
 import { useAuth0 } from '@auth0/auth0-react';
+import { useNavigate } from '@tanstack/react-router';
 
 type FormData = {
   username: string;
@@ -10,14 +11,24 @@ type FormData = {
 
 const OnboardingPage = () => {
   const [formData, setFormData] = useState<FormData>({ username: '' });
-  console.log(formData);
+  const navigate = useNavigate();
 
-  const { user } = useAuth0();
+  const { user, isLoading: authIsLoading, isAuthenticated } = useAuth0();
 
   const { mutateAsync } = useOnboardUser();
 
   if (!user || !user.email || !user.sub || user.email === undefined || user.sub === undefined) {
-    return <h1>Loading...</h1>;
+    return <h1>Loading... (onboarding)</h1>;
+  }
+
+  const { data, isLoading } = useGetUserByAuth0(user.sub);
+
+  const shouldOnboard = useMemo(() => {
+    return !data && isAuthenticated && !isLoading && !authIsLoading;
+  }, [data, isAuthenticated, isLoading, authIsLoading]);
+
+  if (!shouldOnboard) {
+    navigate({ to: '/profile' });
   }
 
   const submit = () => {

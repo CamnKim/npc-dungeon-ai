@@ -8,6 +8,8 @@ import UserProvider from '../components/UserProvider';
 const Root = () => {
   const { isLoading: auth0Loading, user } = useAuth0();
 
+  const userUnneeded = useMemo(() => ['/', '/login'].includes(window.location.pathname), [window]);
+
   const sub = useMemo(() => {
     if (auth0Loading || !user) {
       return '';
@@ -15,7 +17,7 @@ const Root = () => {
     return user.sub!;
   }, [auth0Loading, user]);
 
-  if (!sub) {
+  if (!sub || userUnneeded) {
     return (
       <>
         <Navbar />

@@ -9,14 +9,20 @@ type Props = {
 };
 
 const UserProvider = ({ auth0Sub, children }: PropsWithChildren<Props>) => {
-  const { isAuthenticated, isLoading: authIsLoading } = useAuth0();
+  const { isAuthenticated, isLoading: authIsLoading, getAccessTokenSilently } = useAuth0();
   const { auth, setAuthValue } = useContext(AuthContext);
 
-  const { data, isLoading } = useGetUserByAuth0(auth0Sub);
+  const { data, isLoading, isError, error } = useGetUserByAuth0(auth0Sub);
 
   const navigate = useNavigate();
 
   useEffect(() => {
+    if (isError) {
+      console.error(error.message);
+      if (error.data?.status === 401) {
+        navigate({ to: '/' });
+      }
+    }
     if (!isLoading && data && !auth.user) {
       setAuthValue({ ...auth, user: data });
     }
@@ -30,8 +36,8 @@ const UserProvider = ({ auth0Sub, children }: PropsWithChildren<Props>) => {
     navigate({ to: '/onboard' });
   }
 
-  if (!data || isLoading) {
-    return <h1>Loading...</h1>;
+  if (isLoading) {
+    return <h1>Loading... (user Provider)</h1>;
   }
   return children;
 };
