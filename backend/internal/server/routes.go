@@ -14,13 +14,25 @@ func (s *Server) RegisterRoutes() http.Handler {
 	mux.HandleFunc("/health", s.healthHandler)
 
 	// User Routes
-	mux.Handle("/users/{id}", s.authMiddleware(http.HandlerFunc(s.getUserHandler)))
-	mux.Handle("/users", s.authMiddleware(http.HandlerFunc(s.createUserHandler)))
-	mux.Handle("/auth/users/{sub}", s.authMiddleware(http.HandlerFunc(s.getUserByAuthHandler)))
+	mux.Handle("/users/{id}", s.CombinedAuthMiddleware(http.HandlerFunc(s.getUserHandler)))
+	mux.Handle("/users", s.CombinedAuthMiddleware(http.HandlerFunc(s.createUserHandler)))
+	mux.Handle("/auth/users/{sub}", s.CombinedAuthMiddleware(http.HandlerFunc(s.getUserByAuthHandler)))
 
 	// World Routes
-	mux.Handle("/worlds/{id}", s.authMiddleware(http.HandlerFunc(s.getWorldByIdHandler)))
-	mux.Handle("/worlds", s.authMiddleware(http.HandlerFunc(s.createWorldHandler)))
+	mux.Handle("/worlds/{id}", s.CombinedAuthMiddleware(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			s.getWorldByIdHandler(w, r)
+		case http.MethodPatch:
+			s.updateWorldHandler(w, r)
+		case http.MethodDelete:
+			s.deleteWorldHandler(w, r)
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})))
+	mux.Handle("/worlds", s.CombinedAuthMiddleware(http.HandlerFunc(s.createWorldHandler)))
+	mux.Handle("/users/{uid}/worlds", s.CombinedAuthMiddleware(http.HandlerFunc(s.getUserWorldsHandler)))
 
 	// Wrap the mux with CORS middleware
 	return s.corsMiddleware(mux)
