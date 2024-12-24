@@ -9,7 +9,7 @@ type Props = {
 };
 
 const UserProvider = ({ auth0Sub, children }: PropsWithChildren<Props>) => {
-  const { isAuthenticated, isLoading: authIsLoading, getAccessTokenSilently } = useAuth0();
+  const { isAuthenticated, isLoading: authIsLoading } = useAuth0();
   const { auth, setAuthValue } = useContext(AuthContext);
 
   const { data, isLoading, isError, error } = useGetUserByAuth0(auth0Sub);

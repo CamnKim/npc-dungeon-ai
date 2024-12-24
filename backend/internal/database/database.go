@@ -24,6 +24,7 @@ type Service interface {
 	Close() error
 
 	User() UserDAO
+	World() WorldDAO
 }
 
 type service struct {

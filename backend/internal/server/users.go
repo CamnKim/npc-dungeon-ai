@@ -53,12 +53,23 @@ func (s *Server) createUserHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Missing required fields", http.StatusBadRequest)
 		return
 	}
-	if err := s.db.User().CreateUser(user); err != nil {
+
+	insertedUser, err := s.db.User().CreateUser(user)
+	if err != nil {
 		fmt.Println(err)
 		http.Error(w, "Failed to create user", http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+
+	jsonResp, err := json.Marshal(insertedUser)
+	if err != nil {
+		http.Error(w, "Failed to marshal response", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	if _, err := w.Write(jsonResp); err != nil {
+		log.Printf("Failed to write response: %v", err)
+	}
 }
 
 func (s *Server) getUserByAuthHandler(w http.ResponseWriter, r *http.Request) {
